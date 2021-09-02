@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from models import trips, locations
 from services.database import SessionLocal, engine
+import uvicorn
+
 
 app = FastAPI()
 
@@ -21,13 +23,18 @@ def get_db():
 
 
 @app.get('/reports')
-def get_reports(location: List[str] = Query(None)):
+def get_reports(location_codes: List[str] = Query(None), db: Session = Depends(get_db)):
     """
 
     :return:
     """
+    if not location_codes:
+        return {"error_msg": "Location code missing"}
+    dl = DataLoader()
+    output_reports, error_msg = dl.generate_reports(location_codes, db)
     return {
-        "location": location
+        "report": output_reports,
+        "error_msg": error_msg
     }
 
 
@@ -61,6 +68,5 @@ def delete_all_records(db: Session = Depends(get_db)):
         "trips_num_rows_deleted": trips_num_rows_deleted,
         "error_message": error
     }
-
 
 

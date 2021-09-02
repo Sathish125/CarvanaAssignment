@@ -3,6 +3,38 @@ from models import trips, locations
 
 
 class DataLoader:
+
+    @staticmethod
+    def generate_reports(location_codes=None, db=None):
+        output, error_str = [], ''
+        try:
+            for code in location_codes:
+                temp_dict = {}
+                location_from_db = db.query(locations.Locations).filter_by(LocationCode=code).first()
+                if not location_from_db:
+                    raise Exception("Not a valid location code")
+                temp_dict["LocationCode"] = location_from_db.LocationCode
+                temp_dict["Latitude"] = location_from_db.Latitude
+                temp_dict["Longitude"] = location_from_db.Longitude
+                temp_dict["FacilityOwnedByCarvana"] = True if location_from_db.FacilityOwnedByCarvana else False
+
+                trip_origin_from_db = db.query(trips.Trips).filter_by(Origin=code).all()
+                if trip_origin_from_db:
+                    origin = []
+                    for item in trip_origin_from_db:
+                        origin.append(f"{item.Origin} to {item.Destination} ({item.WeeklyCapacity} Weekly Capacity)")
+                    temp_dict["OriginTrips"] = origin
+                trip_destination_from_db = db.query(trips.Trips).filter_by(Destination=code).all()
+                if trip_destination_from_db:
+                    destination = []
+                    for item in trip_destination_from_db:
+                        destination.append(f"{item.Origin} to {item.Destination} ({item.WeeklyCapacity} Weekly Capacity)")
+                    temp_dict["DestinationTrips"] = destination
+                output.append(temp_dict)
+        except Exception as ex:
+            error_str = repr(ex)
+        return output, error_str
+
     @staticmethod
     def delete_entries_in_locations_trips(db=None):
         """
@@ -67,3 +99,4 @@ class DataLoader:
             error_str = error_str + " " + repr(ex)
             trips_count = 0
         return location_count, trips_count, error_str
+

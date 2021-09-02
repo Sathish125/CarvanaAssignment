@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from models import trips, locations
 from services.database import SessionLocal, engine
-import uvicorn
 
 
 app = FastAPI()

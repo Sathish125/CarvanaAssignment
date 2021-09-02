@@ -24,7 +24,7 @@ def get_db():
 @app.get('/reports')
 def get_reports(location_codes: List[str] = Query(None), db: Session = Depends(get_db)):
     """
-
+    API call to generate detailed reports for given location codes
     :return:
     """
     if not location_codes:
